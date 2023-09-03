@@ -5,11 +5,19 @@
   gather_facts: false
   become: yes
   pre_tasks:
+    - name: "Debug: Print a message before installing 'unzip'"
+      debug:
+        msg: "Installing 'unzip' package..."
+
     - name: "Install 'unzip'"
       apt:
         name: [ "unzip" ]
         state: latest
         update_cache: yes
+
+    - name: "Debug: Print a message after installing 'unzip'"
+      debug:
+        msg: "'unzip' package installation completed."
 
   roles:
     - install-awscli
@@ -25,10 +33,16 @@
     AWS_SECRET_ACCESS_KEY: "{{ lookup('env','AWS_SECRET_ACCESS_KEY') }}"
     AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION') }}"
   tasks:
+    - name: "Debug: Print AWS Access Key ID and Secret Access Key"
+      debug:
+        msg: "AWS_ACCESS_KEY_ID: {{ AWS_ACCESS_KEY_ID }}, AWS_SECRET_ACCESS_KEY: {{ AWS_SECRET_ACCESS_KEY }}"
+
     - name: Set the aws_access_key_id
       shell: "aws configure set aws_access_key_id {{ AWS_ACCESS_KEY_ID }}"
+      
     - name: Set the aws_secret_access_key
       shell: "aws configure set aws_secret_access_key {{ AWS_SECRET_ACCESS_KEY }}"
+      
     - name: Set the default.region
       shell: "aws configure set default.region {{ AWS_DEFAULT_REGION }}"
 
@@ -41,5 +55,9 @@
     AWS_DEFAULT_REGION: "{{ lookup('env', 'AWS_DEFAULT_REGION') }}"
     ENVIRONMENT_NAME: "{{ lookup('env', 'ENVIRONMENT_NAME') }}"
   pre_tasks:
+    - name: "Debug: Print AWS_DEFAULT_REGION and ENVIRONMENT_NAME"
+      debug:
+        msg: "AWS_DEFAULT_REGION: {{ AWS_DEFAULT_REGION }}, ENVIRONMENT_NAME: {{ ENVIRONMENT_NAME }}"
+
     - name: Create a kubeconfig file for the cluster
       shell: "aws eks update-kubeconfig --region {{ AWS_DEFAULT_REGION }} --name {{ ENVIRONMENT_NAME }}-cluster"
