@@ -1,8 +1,8 @@
-[![CircleCI](https://circleci.com/gh/nyan-lin-tun/Operationalize-a-Machine-Learning-Microservice-API.svg?style=svg)](https://circleci.com/gh/nyan-lin-tun/Operationalize-a-Machine-Learning-Microservice-API)
+# Cloud DevOps Engineer Capstone Project
 
-# Operationalize a Machine Learning Microservice API
+This project represents the successful completion of the last final Capstone project and the Cloud DevOps Engineer Nanodegree at Udacity.
 
-This project contains the following: 
+## What did I learn?
 
  1. Linting project codes.
  2. Docker for containerize the applicaion.
@@ -11,55 +11,61 @@ This project contains the following:
  5. Deploy container using and prediction.
  6. Installation of Kubernetes and Minikube.
 
-## Requirements
+## Application
 
-- [Python 3](https://www.python.org/downloads/)
-- [Docker](https://docs.docker.com/docker-for-mac/)
-- [Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-- [Minikube](https://kubernetes.io/docs/tasks/tools/install-minikube/)
+The Application is render a simple webpage in the user's browser.
+A requirements.txt is used to ensure that all needed dependencies come along with the Application.
 
-## Setup the Environment
+## Kubernetes Cluster
 
-* Create a virtualenv and activate it
-* Run `make install` to install the necessary dependencies
+I used AWS CloudFormation to deploy the Kubernetes Cluster.
+The CloudFormation Deployment can be broken down into four Parts:
+- **Networking**, to ensure new nodes can communicate with the Cluster
+- **Elastic Kubernetes Service (EKS)** is used to create a Kubernetes Cluster
+- **NodeGroup**, each NodeGroup has a set of rules to define how instances are operated and created for the EKS-Cluster
+- **Management** is needed to configure and manage the Cluster and its deployments and services. I created two management hosts for extra redundancy if one of them fails.
 
-### Running `app.py`
+#### List of deployed Stacks:
+![Cloud Formation Stacks](image.png)
 
-    python app.py
+#### List of deployed Instances:
+![EC2 instance](image-1.png)
 
-## Linting project codes
+## CircleCi - CI/CD Pipelines
 
-    make lint
+I used CircleCi to create a CI/CD Pipeline to test and deploy changes manually before they get deployed automatically to the Cluster using Ansible.
 
-## Run applicaion with docker.
+#### From Zero to Hero demonstration:
 
-    ./run_docker.sh
+![Circleci Pipeline](image-2.png)
 
-## Upload docker image
+## Linting using Pylint and Hadolint
 
-    ./upload_docker.sh
-> :warning: **Please don't forget to change ```dockerpath``` and ``` docker ID ``` in `upload_docker.sh`**
+Linting is used to check if the Application and Dockerfile is syntactically correct.
+This process makes sure that the code quality is always as good as possible.
 
-## Configure Kubernetes to Run locally
+#### This is the output when the step fails:
 
-    minikube start
-    kubectl get pod
-  
-  After pod status change to ```Running```
+![Lint Fail](screenshots/lint-fail.png)
 
-    ./run_kubernetes.sh
 
-## To test application via Docker or Kubernetes
+#### This is the output when the step passes:
 
-    ./make_prediction.sh
+![Lint Pass](screenshots/lint-pass.png)
 
-## Files
+## Access the Application
 
-- config.yml: CircleCI configuration file.
-- Makefile: includes instructions for setup, install, test and lint.
-- app.py: Python application file.
-- Dockerfile: Dockerfile for build and expose.
-- run_docker.sh: Shell file to run Docker, locally.
-- upload_docker.sh: Shell file to upload Docker image.
-- run_kubernetes.sh: Shell file to run the app with kubernetes.
-- make_prediction.sh: Shell file to test flask app locally.
+After the EKS-Cluster has been successfully configured using Ansible within the CI/CD Pipeline, I checked the deployment and service as follows:
+
+```
+kubectl get deployments
+NAME                          READY   UP-TO-DATE   AVAILABLE   AGE
+capstone-project-deployment   4/4     4            4           105m
+
+kubectl get services
+NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP                                                              PORT(S)        AGE
+capstone-project-service   LoadBalancer   10.100.107.25   a4261669700ee4272a28a1354c6aa12c-900751887.us-east-1.elb.amazonaws.com   80:30282/TCP   105m
+kubernetes                 ClusterIP      10.100.0.1      <none>                                                                   443/TCP        113m                                                                      443/TCP        80m
+```
+
+Public LB DNS: http://a4261669700ee4272a28a1354c6aa12c-900751887.us-east-1.elb.amazonaws.com/
