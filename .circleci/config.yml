@@ -133,16 +133,17 @@ jobs:
           paths:
             - inventory.txt
             - checkIfDeployed.txt
+
 workflows:
   default:
     jobs:
-      - build
-      - upload-docker:
-          requires:
-            - build
-          filters:
-            branches:
-              only: [ main ]
+      # - build
+      # - upload-docker:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: [ main ]
       - deploy-infrastructure:
           filters:
             branches:
