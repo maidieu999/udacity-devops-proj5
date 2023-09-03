@@ -9,18 +9,41 @@
       debug:
         msg: "Installing 'unzip' package..."
 
-    - name: "Install 'unzip'"
+    - name: "Check Linux Distribution"
+      shell: "cat /etc/os-release"
+      register: linux_distribution
+      changed_when: false
+      ignore_errors: yes
+
+    - name: "Set Package Manager Fact"
+      set_fact:
+        package_manager: "yum"
+      when: "'Amazon' in linux_distribution.stdout"
+
+    - name: "Set Package Manager Fact"
+      set_fact:
+        package_manager: "apt"
+      when: "'Debian' in linux_distribution.stdout"
+
+    - name: "Install 'unzip' using {{ package_manager }}"
+      yum:
+        name: unzip
+        state: latest
+      when: "'yum' in package_manager"
+
+    - name: "Install 'unzip' using {{ package_manager }}"
       apt:
-        name: [ "unzip" ]
+        name: unzip
         state: latest
         update_cache: yes
+      when: "'apt' in package_manager"
 
     - name: "Debug: Print a message after installing 'unzip'"
       debug:
         msg: "'unzip' package installation completed."
 
   roles:
-    - install-awscli
+    # - install-awscli
     - install-kubectl
 
 - name: "Authenticate AWS CLI with AWS"
