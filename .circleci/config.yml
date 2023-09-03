@@ -161,16 +161,66 @@ jobs:
                 ansible-playbook -i ~/inventory.txt configure-server.yml
               fi
 
+  configure-cluster:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "88:b3:23:83:40:89:8d:21:81:ca:85:c5:71:0c:39:13"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Configure server
+          command: |
+            if grep -q "No changes to deploy" ~/checkIfDeployed.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                cd ansible
+                ansible-playbook -i ~/inventory.txt configure-cluster.yml
+              fi
+      - run:
+          name: Wait for LoadBalancer's domain to become reachable
+          command: |
+            if grep -q "No changes to deploy" ~/checkIfDeployed.txt
+              then
+                cat ~/inventory.txt
+                echo "Our management instances are already configured."
+              else
+                cat ~/inventory.txt
+                echo "Wait 60 seconds..."
+                sleep 60
+              fi
+      - run:
+          name: Display the LoadBalancer's DNS name
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt save-elb-dns.yml
+            cat ~/elb_dns.txt
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - elb_dns.txt
+
 workflows:
   default:
     jobs:
-      # - build
-      # - upload-docker:
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: [ main ]
+      - build
+      - upload-docker:
+          requires:
+            - build
+          filters:
+            branches:
+              only: [ main ]
       - deploy-infrastructure:
           filters:
             branches:
@@ -179,3 +229,8 @@ workflows:
       - configure-infrastructure:
           requires:
             - deploy-infrastructure
+
+      - configure-cluster:
+          requires:
+            - configure-infrastructure
+            - upload-docker
