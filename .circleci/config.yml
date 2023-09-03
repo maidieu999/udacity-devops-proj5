@@ -211,6 +211,28 @@ jobs:
           paths:
             - elb_dns.txt
 
+  deploy-docker:
+    docker:
+      - image: python:3.7-alpine3.11
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "88:b3:23:83:40:89:8d:21:81:ca:85:c5:71:0c:39:13"
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible
+      - run:
+          name: Deploy newest Docker Image
+          command: |
+            cat ~/inventory.txt
+            cd ansible
+            ansible-playbook -i ~/inventory.txt deploy-app.yml
+          no_output_timeout: 2m
+
 workflows:
   default:
     jobs:
@@ -229,8 +251,10 @@ workflows:
       - configure-infrastructure:
           requires:
             - deploy-infrastructure
-
       - configure-cluster:
           requires:
             - configure-infrastructure
             - upload-docker
+      - deploy-docker:
+          requires:
+            - configure-cluster

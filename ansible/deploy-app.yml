@@ -12,7 +12,7 @@
       args:
         chdir: $HOME
 
-    - name: Check if deployment ist successful
+    - name: Check if deployment is successful
       shell: "./bin/kubectl rollout status deployments/{{ ENVIRONMENT_NAME }}-deployment"
       args:
         chdir: $HOME

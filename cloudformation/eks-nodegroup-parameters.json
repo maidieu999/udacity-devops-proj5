@@ -1,5 +1,5 @@
 [
-  "EnvironmentName=capstone-project",
+  "EnvironmentName=production",
   "MinSize=2",
   "MaxSize=6",
   "DesiredSize=4",
